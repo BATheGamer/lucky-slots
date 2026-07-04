@@ -114,7 +114,7 @@ const gameUrl = location.href.replace(/dashboard\.html.*$/, "") ;
 $("gameUrl").textContent = gameUrl;
 $("qr").src = "https://api.qrserver.com/v1/create-qr-code/?size=440x440&data=" + encodeURIComponent(gameUrl);
 
-const configOk = window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey !== "PASTE_ME";
+const configOk = window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.databaseURL && !window.FIREBASE_CONFIG.databaseURL.includes("PASTE_ME");
 if (!configOk) {
   $("offlineBanner").style.display = "block";
 } else {

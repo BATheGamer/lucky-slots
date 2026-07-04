@@ -217,7 +217,7 @@ function render() {
 }
 
 // ---- Firebase ----
-const configOk = window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey !== "PASTE_ME";
+const configOk = window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.databaseURL && !window.FIREBASE_CONFIG.databaseURL.includes("PASTE_ME");
 if (configOk) {
   try {
     const app = initializeApp(window.FIREBASE_CONFIG);

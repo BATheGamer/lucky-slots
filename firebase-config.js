@@ -1,10 +1,5 @@
-// Paste your Firebase web app config here (from Firebase Console > Project settings > Your apps)
+// Firebase project: slots-machine-66ec3 (Realtime Database, asia-southeast1)
 window.FIREBASE_CONFIG = {
-  apiKey: "PASTE_ME",
-  authDomain: "PASTE_ME",
-  databaseURL: "PASTE_ME",
-  projectId: "PASTE_ME",
-  storageBucket: "PASTE_ME",
-  messagingSenderId: "PASTE_ME",
-  appId: "PASTE_ME"
+  databaseURL: "https://slots-machine-66ec3-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "slots-machine-66ec3"
 };
