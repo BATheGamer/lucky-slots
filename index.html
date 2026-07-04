@@ -166,7 +166,7 @@
 <script src="firebase-config.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, get, update, push, serverTimestamp }
+import { getDatabase, ref, get, update, push, serverTimestamp, onValue }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 // ---- Game math: RTP = 80.04% ----
@@ -225,6 +225,15 @@ if (configOk) {
     const snap = await get(ref(db, "players/" + playerId));
     if (snap.exists()) state = { ...state, ...snap.val() };
     savePlayer();
+    // If the instructor wipes the database, reset this player's session too
+    onValue(ref(db, "players/" + playerId), (s) => {
+      if (!s.exists() && (state.spins > 0 || state.loans > 0 || state.balance !== START_BALANCE)) {
+        state = { balance: START_BALANCE, wagered: 0, won: 0, spins: 0, loans: 0, loanTotal: 0 };
+        render();
+        $("msg").className = "result-msg push";
+        $("msg").textContent = "🔄 The instructor reset the game — fresh $10,000!";
+      }
+    });
   } catch (e) {
     console.error("Firebase init failed", e);
     $("offlineBanner").style.display = "block";
