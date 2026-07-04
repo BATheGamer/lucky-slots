@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🎰 Lucky Slots — Academic Demo</title>
+<style>
+  :root {
+    --bg: #14092b;
+    --panel: #241245;
+    --panel2: #2f1a58;
+    --gold: #ffd54a;
+    --green: #4ade80;
+    --red: #f87171;
+    --text: #f3eefc;
+    --muted: #b8a6d9;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: radial-gradient(circle at 50% 0%, #2b1257 0%, var(--bg) 70%);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 12px;
+  }
+  .wrap { width: 100%; max-width: 460px; }
+  header { text-align: center; margin: 8px 0 14px; }
+  header h1 { font-size: 1.5rem; letter-spacing: 1px; }
+  header .sub { color: var(--muted); font-size: 0.8rem; margin-top: 4px; }
+  .badge {
+    display: inline-block; background: var(--panel2); color: var(--muted);
+    border-radius: 999px; padding: 3px 12px; font-size: 0.75rem; margin-top: 6px;
+  }
+  .balance-card {
+    background: linear-gradient(135deg, #3b2270, var(--panel));
+    border: 1px solid #4c2f8a; border-radius: 16px;
+    padding: 14px 18px; display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 12px;
+  }
+  .balance-card .label { color: var(--muted); font-size: 0.75rem; }
+  .balance-card .amount { font-size: 1.7rem; font-weight: 800; color: var(--gold); }
+  .loan-btn {
+    background: #7c3aed; color: #fff; border: none; border-radius: 12px;
+    padding: 10px 14px; font-size: 0.85rem; font-weight: 700; cursor: pointer;
+  }
+  .loan-btn:active { transform: scale(0.96); }
+  .machine {
+    background: var(--panel); border: 1px solid #4c2f8a; border-radius: 20px;
+    padding: 18px; text-align: center;
+  }
+  .reels {
+    display: flex; justify-content: center; gap: 10px; margin-bottom: 14px;
+  }
+  .reel {
+    width: 92px; height: 92px; background: var(--panel2);
+    border: 2px solid #5b3aa0; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 3rem; transition: transform 0.1s;
+  }
+  .reel.spinning { animation: wobble 0.12s infinite; }
+  @keyframes wobble { 0%{transform:translateY(-3px)} 50%{transform:translateY(3px)} 100%{transform:translateY(-3px)} }
+  .result-msg { min-height: 26px; font-size: 1rem; font-weight: 700; margin-bottom: 10px; }
+  .result-msg.win { color: var(--green); }
+  .result-msg.lose { color: var(--red); }
+  .result-msg.push { color: var(--gold); }
+  .bet-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .bet-row input {
+    flex: 1; background: var(--panel2); border: 1px solid #5b3aa0; border-radius: 12px;
+    color: var(--text); font-size: 1.1rem; font-weight: 700; text-align: center; padding: 12px;
+    min-width: 0;
+  }
+  .quick { display: flex; gap: 6px; margin-bottom: 12px; }
+  .quick button {
+    flex: 1; background: var(--panel2); border: 1px solid #5b3aa0; color: var(--muted);
+    border-radius: 10px; padding: 8px 0; font-size: 0.8rem; font-weight: 700; cursor: pointer;
+  }
+  .spin-btn {
+    width: 100%; padding: 16px; font-size: 1.25rem; font-weight: 800; letter-spacing: 1px;
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    color: #fff; border: none; border-radius: 16px; cursor: pointer;
+  }
+  .spin-btn:disabled { opacity: 0.5; }
+  .spin-btn:active:not(:disabled) { transform: scale(0.97); }
+  .stats {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px;
+  }
+  .stat {
+    background: var(--panel); border: 1px solid #3d2670; border-radius: 12px;
+    padding: 8px; text-align: center;
+  }
+  .stat .v { font-weight: 800; font-size: 0.95rem; }
+  .stat .k { color: var(--muted); font-size: 0.65rem; margin-top: 2px; }
+  .paytable {
+    background: var(--panel); border: 1px solid #3d2670; border-radius: 14px;
+    margin-top: 12px; padding: 12px 16px; font-size: 0.85rem;
+  }
+  .paytable h3 { font-size: 0.8rem; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+  .paytable .row { display: flex; justify-content: space-between; padding: 3px 0; }
+  .paytable .row span:last-child { color: var(--gold); font-weight: 700; }
+  .offline {
+    display: none; background: #7f1d1d; color: #fecaca; border-radius: 10px;
+    padding: 8px 12px; font-size: 0.75rem; text-align: center; margin-bottom: 10px;
+  }
+  footer { text-align: center; color: var(--muted); font-size: 0.7rem; margin: 16px 0; }
+  footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🎰 Lucky Slots</h1>
+    <div class="sub">Academic demo — simulated money only, no real gambling</div>
+    <div class="badge" id="playerBadge">👤 …</div>
+  </header>
+
+  <div class="offline" id="offlineBanner">⚠️ Not connected to database — playing locally, results are not recorded.</div>
+
+  <div class="balance-card">
+    <div>
+      <div class="label">💰 Balance</div>
+      <div class="amount" id="balance">$10,000</div>
+    </div>
+    <button class="loan-btn" id="loanBtn">💳 Loan +$1,000</button>
+  </div>
+
+  <div class="machine">
+    <div class="reels">
+      <div class="reel" id="r0">🎁</div>
+      <div class="reel" id="r1">🗝️</div>
+      <div class="reel" id="r2">👑</div>
+    </div>
+    <div class="result-msg" id="msg">Place your bet and spin!</div>
+    <div class="bet-row">
+      <input type="number" id="bet" value="100" min="1" step="1" inputmode="numeric">
+    </div>
+    <div class="quick">
+      <button data-b="100">$100</button>
+      <button data-b="500">$500</button>
+      <button data-b="1000">$1,000</button>
+      <button data-b="max">MAX</button>
+    </div>
+    <button class="spin-btn" id="spinBtn">SPIN 🎰</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="v" id="sWagered">$0</div><div class="k">Wagered</div></div>
+    <div class="stat"><div class="v" id="sWon">$0</div><div class="k">Won</div></div>
+    <div class="stat"><div class="v" id="sLoans">0</div><div class="k">💳 Loans</div></div>
+  </div>
+
+  <div class="paytable">
+    <h3>🏅 Paytable (× your bet)</h3>
+    <div class="row"><span>👑 👑 👑</span><span>105×</span></div>
+    <div class="row"><span>🏅 🏅 🏅</span><span>25×</span></div>
+    <div class="row"><span>💳 💳 💳</span><span>12×</span></div>
+    <div class="row"><span>🗝️ 🗝️ 🗝️</span><span>8×</span></div>
+    <div class="row"><span>🎁 🎁 🎁</span><span>5×</span></div>
+    <div class="row"><span>Any pair</span><span>0.5×</span></div>
+  </div>
+
+  <footer>For classroom use · <a href="dashboard.html">📊 instructor dashboard</a></footer>
+</div>
+
+<script src="firebase-config.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get, update, push, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+// ---- Game math: RTP = 80.04% ----
+// Symbol weights per reel (out of 100)
+const SYMBOLS = [
+  { e: "🎁", w: 30 },
+  { e: "🗝️", w: 25 },
+  { e: "💳", w: 20 },
+  { e: "🏅", w: 15 },
+  { e: "👑", w: 10 },
+];
+const TRIPLE_PAY = { "🎁": 5, "🗝️": 8, "💳": 12, "🏅": 25, "👑": 105 };
+const PAIR_PAY = 0.5;
+const START_BALANCE = 10000;
+const LOAN_AMOUNT = 1000;
+
+function drawSymbol() {
+  let r = Math.random() * 100;
+  for (const s of SYMBOLS) { if ((r -= s.w) < 0) return s.e; }
+  return SYMBOLS[0].e;
+}
+
+// ---- Player identity ----
+function getPlayerId() {
+  let id = localStorage.getItem("slots_player_id");
+  if (!id) {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    id = "Player-" + Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+    localStorage.setItem("slots_player_id", id);
+  }
+  return id;
+}
+const playerId = getPlayerId();
+document.getElementById("playerBadge").textContent = "👤 " + playerId;
+
+// ---- State ----
+let state = { balance: START_BALANCE, wagered: 0, won: 0, spins: 0, loans: 0, loanTotal: 0 };
+let db = null;
+
+const $ = (id) => document.getElementById(id);
+const fmt = (n) => "$" + Math.round(n).toLocaleString("en-US");
+
+function render() {
+  $("balance").textContent = fmt(state.balance);
+  $("sWagered").textContent = fmt(state.wagered);
+  $("sWon").textContent = fmt(state.won);
+  $("sLoans").textContent = state.loans;
+}
+
+// ---- Firebase ----
+const configOk = window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey !== "PASTE_ME";
+if (configOk) {
+  try {
+    const app = initializeApp(window.FIREBASE_CONFIG);
+    db = getDatabase(app);
+    const snap = await get(ref(db, "players/" + playerId));
+    if (snap.exists()) state = { ...state, ...snap.val() };
+    savePlayer();
+  } catch (e) {
+    console.error("Firebase init failed", e);
+    $("offlineBanner").style.display = "block";
+  }
+} else {
+  $("offlineBanner").style.display = "block";
+}
+render();
+
+function savePlayer() {
+  if (!db) return;
+  update(ref(db, "players/" + playerId), { ...state, id: playerId, lastSeen: serverTimestamp() })
+    .catch((e) => console.error(e));
+}
+function logEvent(type, data) {
+  if (!db) return;
+  push(ref(db, "events"), { player: playerId, type, ...data, ts: serverTimestamp() })
+    .catch((e) => console.error(e));
+}
+
+// ---- Betting ----
+document.querySelectorAll(".quick button").forEach((b) => {
+  b.addEventListener("click", () => {
+    $("bet").value = b.dataset.b === "max" ? Math.floor(state.balance) : b.dataset.b;
+  });
+});
+
+$("loanBtn").addEventListener("click", () => {
+  state.balance += LOAN_AMOUNT;
+  state.loans += 1;
+  state.loanTotal += LOAN_AMOUNT;
+  render();
+  savePlayer();
+  logEvent("loan", { amount: LOAN_AMOUNT, balanceAfter: state.balance });
+  $("msg").className = "result-msg push";
+  $("msg").textContent = "💳 Loan taken: +" + fmt(LOAN_AMOUNT);
+});
+
+// ---- Spin ----
+let spinning = false;
+$("spinBtn").addEventListener("click", () => {
+  if (spinning) return;
+  const bet = Math.floor(Number($("bet").value));
+  if (!bet || bet < 1) { flash("Enter a valid bet (min $1)"); return; }
+  if (bet > state.balance) { flash("Not enough balance — take a 💳 loan!"); return; }
+
+  spinning = true;
+  $("spinBtn").disabled = true;
+  state.balance -= bet;
+  state.wagered += bet;
+  state.spins += 1;
+  render();
+
+  const finals = [drawSymbol(), drawSymbol(), drawSymbol()];
+  const reels = [$("r0"), $("r1"), $("r2")];
+  reels.forEach((r) => r.classList.add("spinning"));
+  $("msg").textContent = "";
+
+  const stopped = [false, false, false];
+  const shuffle = setInterval(() => {
+    reels.forEach((r, i) => { if (!stopped[i]) r.textContent = drawSymbol(); });
+  }, 80);
+
+  // stop reels one by one
+  finals.forEach((sym, i) => {
+    setTimeout(() => {
+      stopped[i] = true;
+      reels[i].textContent = sym;
+      reels[i].classList.remove("spinning");
+      if (i === 2) {
+        clearInterval(shuffle);
+        settle(bet, finals);
+      }
+    }, 700 + i * 500);
+  });
+});
+
+function settle(bet, finals) {
+  const [a, b, c] = finals;
+  let payout = 0, cls = "lose", text = "😢 You lose " + fmt(bet);
+  if (a === b && b === c) {
+    payout = bet * TRIPLE_PAY[a];
+    cls = "win";
+    text = "🎉 " + a + a + a + " — You win " + fmt(payout) + "!";
+    if (a === "👑") text = "👑 JACKPOT! " + fmt(payout) + "!";
+  } else if (a === b || b === c || a === c) {
+    payout = bet * PAIR_PAY;
+    cls = "push";
+    text = "🎁 Pair — " + fmt(payout) + " back";
+  }
+  state.balance += payout;
+  state.won += payout;
+  render();
+  savePlayer();
+  logEvent("spin", { bet, payout, result: finals.join(""), balanceAfter: state.balance });
+  $("msg").className = "result-msg " + cls;
+  $("msg").textContent = text;
+  spinning = false;
+  $("spinBtn").disabled = false;
+}
+
+function flash(t) {
+  $("msg").className = "result-msg lose";
+  $("msg").textContent = t;
+}
+</script>
+</body>
+</html>
